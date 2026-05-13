@@ -1,0 +1,20 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Remove="Aggregates\PatientAggregate\ValueObject\PersonName.cs~RF2bf05bc5.TMP" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Aggregates\DoctorAggregate\" />
+    <Folder Include="Exceptions\" />
+  </ItemGroup>
+
+  
+
+</Project>
