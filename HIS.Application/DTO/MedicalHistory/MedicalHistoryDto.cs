@@ -6,9 +6,10 @@ using System.Threading.Tasks;
 
 namespace HIS.Application.DTO.MedicalHistory
 {
-
-    public sealed class AddMedicalHistoryRequest
+    public sealed class MedicalHistoryDto
     {
+        public Guid Id { get; init; }
+
         public string Diagnosis { get; init; } = default!;
 
         public string Treatment { get; init; } = default!;
@@ -17,5 +18,4 @@ namespace HIS.Application.DTO.MedicalHistory
 
         public DateOnly RecordDate { get; init; }
     }
- 
 }

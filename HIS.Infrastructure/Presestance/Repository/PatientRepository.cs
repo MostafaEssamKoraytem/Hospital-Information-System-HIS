@@ -23,71 +23,57 @@ namespace HIS.Infrastructure.Presestance.Repository
 
         public async Task AddAsync(Patient patient)
         {
-          var p =  Patient.Create(patient.FullName,
-                   patient.NationalIdentity,
-                   patient.PhoneNumber,
-                   patient.Address,
-                   patient.DateOfBirth,
-                   patient.Gender,
-                   patient.InsurancePolicy);
-            await _context.Patients.AddAsync(p);
+            
+            Patient.Create(
+                patient.FullName, 
+                patient.NationalIdentity, 
+                patient.PhoneNumber, 
+                patient.DateOfBirth,
+                patient.Gender);
+            await _context.Patients.AddAsync(patient);
             await _context.SaveChangesAsync();
         }
 
-        public async Task<bool> ExistsByNationalIdentityAsync(string nationalIdentity)
+
+
+        public async Task<bool> ExistsDuplicateActivePatientAsync(
+                  string nationalIdentity,
+                  string phoneNumber
+                  )
         {
-            var exists = await _context.Patients.AnyAsync(p => p.NationalIdentity.Value == nationalIdentity);
-            return exists;
+            return await _context.Patients
+                .AsNoTracking()
+                .AnyAsync(
+                    x =>
+                        x.IsActive &&
+                        x.NationalIdentity.Value == nationalIdentity &&
+                        x.PhoneNumber.Value == phoneNumber
+                  );
         }
 
-        public async Task<bool> ExistsDuplicateActivePatientAsync(string nationalIdentity, 
-            string phoneNumber)
+        public async Task<Patient?> GetByIdAsync(Guid id)
         {
-            var exists = await _context.Patients.AnyAsync(p =>
-                p.NationalIdentity.Value == nationalIdentity &&
-                p.PhoneNumber.Value == phoneNumber &&
-                p.IsActive);
-
-            return exists;
+            return await _context.Patients
+                .Include(x => x.Documents)
+                .Include(x => x.MedicalRecords)
+                .FirstOrDefaultAsync(x => x.Id == id);
         }
-
-        public Task<Patient?> GetByIdAsync(Guid patientId)
+        public async Task<bool> HasActiveAppointmentsAsync(Guid patientId)
         {
+            //return await _context.Appointments
+            //    .AnyAsync(x => x.PatientId == patientId && x.IsActive);
+       
             throw new NotImplementedException();
         }
 
-        public async Task<Patient?> GetByMRNAsync(string mrn)
-        {
-            var patient = await _context.Patients.FirstOrDefaultAsync(p => p.MRN.Value == mrn);
-            return patient;
-        }
 
-        public async Task<Patient?> GetByNationalIdentityAsync(string nationalIdentity)
+        public async Task UpdateAsync(Patient patient)
         {
-            var patient = await _context.Patients.FirstOrDefaultAsync(p => p.NationalIdentity.Value == nationalIdentity);
-            return patient;
-        }
-
-        public  Task<bool> HasActiveAppointmentsAsync(Guid patientId)
-        {
-            //var hasActiveAppointments 
-            //    = await _context.Appointments..AnyAsync(
-            //        a => a.PatientId == patientId && a.IsActive);
-            //return hasActiveAppointments;
-            throw new NotImplementedException();
-        }
-
-        public async Task Update(Patient patient)
-        {
-            //patient.UpdatePersonalInfo(patient.FullName, patient.PhoneNumber, patient.Address, patient.Gender);
-
-            patient.UpdatePersonalInfo(patient.FullName, patient.PhoneNumber, patient.Address, patient.Gender);
-             _context.Patients.Update(patient);
+            _context.Patients.Update(patient);
             await _context.SaveChangesAsync();
         }
 
-        public async Task<IReadOnlyCollection<DocumentRecord>> GetPatientDocumentsAsync(
-                        Guid patientId,
+        public async Task<IReadOnlyCollection<DocumentRecord>> GetPatientDocumentsAsync(Guid patientId,
                         CancellationToken cancellationToken = default)
         {
             var patientExists = await _context.Patients
@@ -98,15 +84,15 @@ namespace HIS.Infrastructure.Presestance.Repository
             if (!patientExists)
                 throw new Exception("Patient not found.");
 
-            return await _context.Documents
+
+            // concat full url from storage path and return document records
+            return await _context.Documents.AsNoTracking()
                 .Where(x => x.PatientId == patientId)
                 .OrderByDescending(x => x.UploadedAt)
                 .ToListAsync(cancellationToken);
         }
-
-        public async Task AddMedicalHistoryEntryAsync(
-                Guid patientId,
-                MedicalRecord medicalRecord,
+      
+        public async Task AddMedicalHistoryEntryAsync(Guid patientId, MedicalRecord medicalRecord,
                 CancellationToken cancellationToken = default)
         {
             var patient = await _context.Patients
@@ -123,72 +109,32 @@ namespace HIS.Infrastructure.Presestance.Repository
                     "Cannot add medical history to inactive patient.");
 
             patient.AddMedicalHistoryEntry(medicalRecord);
+            //_context.Patients.Update(patient);
+            await _context.SaveChangesAsync(cancellationToken);
         }
 
-        public async Task<IReadOnlyCollection<Patient>>
-        SearchPatientsAsync(
-            string? name,
-            string? nationalIdentity,
-            string? mrn,
-            string? phoneNumber,
-            int pageNumber,
-            int pageSize,
-            CancellationToken cancellationToken = default)
+        public async Task<IReadOnlyCollection<Patient>> SearchPatientsAsync(string? name,string? nationalIdentity,
+       string? mrn, string? phoneNumber, int pageNumber, int pageSize)
         {
-            if (string.IsNullOrWhiteSpace(name) &&
-                string.IsNullOrWhiteSpace(nationalIdentity) &&
-                string.IsNullOrWhiteSpace(mrn) &&
-                string.IsNullOrWhiteSpace(phoneNumber))
-            {
-                throw new Exception(
-                    "At least one search criteria required.");
-            }
-
-            if (pageSize > 100)
-                pageSize = 100;
-
-            IQueryable<Patient> query =
-                _context.Patients.AsQueryable();
-
-           
+            IQueryable<Patient> query = _context.Patients.AsNoTracking();
 
             if (!string.IsNullOrWhiteSpace(name))
-            {
                 query = query.Where(x =>
-                    (x.FullName.FirstName + " " +
-                     x.FullName.LastName)
-                    .Contains(name));
-            }
-
+                    (x.FullName.FirstName + " " + x.FullName.LastName).Contains(name));
 
             if (!string.IsNullOrWhiteSpace(nationalIdentity))
-            {
-                query = query.Where(x =>
-                    x.NationalIdentity.Value ==
-                    nationalIdentity);
-            }
-
-           
+                query = query.Where(x => x.NationalIdentity.Value == nationalIdentity);
 
             if (!string.IsNullOrWhiteSpace(mrn))
-            {
-                query = query.Where(x =>
-                    x.MRN.Value == mrn);
-            }
-
-          
+                query = query.Where(x => x.MRN.Value == mrn);
 
             if (!string.IsNullOrWhiteSpace(phoneNumber))
-            {
-                query = query.Where(x =>
-                    x.PhoneNumber.Value == phoneNumber);
-            }
+                query = query.Where(x => x.PhoneNumber.Value == phoneNumber);
 
             return await query
-                .OrderBy(x => x.FullName.FirstName)
                 .Skip((pageNumber - 1) * pageSize)
                 .Take(pageSize)
-                .ToListAsync(cancellationToken);
+                .ToListAsync();
         }
 
         public async Task DeactivatePatientAsync(
@@ -207,19 +153,41 @@ namespace HIS.Infrastructure.Presestance.Repository
                 await HasActiveAppointmentsAsync(patient.Id);
 
             patient.Deactivate(hasActiveAppointments);
+            //_context.Patients.Update(patient);
+            await _context.SaveChangesAsync(cancellationToken);
         }
 
-        public Task UploadMedicalDocumentAsync(Guid patientId, DocumentRecord document, CancellationToken cancellationToken = default)
+        public async Task UploadMedicalDocumentAsync(
+           Guid patientId,
+           DocumentRecord document,
+           CancellationToken cancellationToken = default)
         {
-            // scan docment vires
-            // upload document to storage
-            // save document url to database
-            throw new NotImplementedException();
+            ArgumentNullException.ThrowIfNull(document);
+
+            var patient = await _context.Patients
+                .Include(x => x.Documents)
+                .FirstOrDefaultAsync(
+                    x => x.Id == patientId,
+                    cancellationToken);
+
+            if (patient is null)
+                throw new KeyNotFoundException("Patient not found.");
+
+            if (!patient.IsActive)
+            {
+                throw new InvalidOperationException(
+                    "Cannot upload documents to inactive patient.");
+            }
+
+            // external storage upload here
+            // antivirus scanning here
+            // generate secure file url here
+
+            patient.AttachDocument(document);
+
+            await _context.SaveChangesAsync(cancellationToken);
         }
 
-        void IPatientRepository.Update(Patient patient)
-        {
-            throw new NotImplementedException();
-        }
+      
     }
 }

@@ -25,68 +25,57 @@ namespace HIS.API.Controllers
         // POST: api/patients
         // =========================================================
 
-        //[HttpPost]
-        //[ProducesResponseType(typeof(Guid), StatusCodes.Status201Created)]
-        //[ProducesResponseType(StatusCodes.Status400BadRequest)]
-        //public async Task<IActionResult> CreatePatient(
-        //    [FromBody] PatientDto request,
-        //    CancellationToken cancellationToken)
-        //{
-        //    var patientId =
-        //        await _patientService.AddAsync(request);
+        [HttpPost]
+        [ProducesResponseType(typeof(Guid), StatusCodes.Status201Created)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public async Task<IActionResult> CreatePatient([FromBody] CreatePatientRequest request,
+            CancellationToken cancellationToken)
+        {
 
-        //    return CreatedAtAction(
-        //        nameof(GetPatientById),
-        //        new { patientId },
-        //        patientId);
-        //}
+            var patientId =  await _patientService.CreateAsync(request);
+            return Ok(patientId);
+        }
 
         // =========================================================
         // 2. Get Patient By Id
         // GET: api/patients/{patientId}
         // =========================================================
 
-        //[HttpGet("{patientId:guid}")]
-        //[ProducesResponseType(
-        //    typeof(PatientDetailsDto),
-        //    StatusCodes.Status200OK)]
-        //[ProducesResponseType(StatusCodes.Status404NotFound)]
-        //public async Task<IActionResult> GetPatientById(
-        //    Guid patientId,
-        //    CancellationToken cancellationToken)
-        //{
-        //    var patient =
-        //        await _patientService.GetPatientByIdAsync(
-        //            patientId,
-        //            cancellationToken);
+        [HttpGet("{patientId:guid}")]
+        [ProducesResponseType(typeof(PatientDetailsDto),StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<IActionResult> GetPatientById(
+            Guid patientId,
+            CancellationToken cancellationToken)
+        {
+            var patient =
+                await _patientService.GetByIdAsync(
+                    patientId);
 
-        //    if (patient is null)
-        //        return NotFound();
+            if (patient is null)
+                return NotFound();
 
-        //    return Ok(patient);
-        //}
+            return Ok(patient);
+        }
 
         // =========================================================
         // 3. Update Patient
         // PUT: api/patients/{patientId}
         // =========================================================
 
-        //[HttpPut("{patientId:guid}")]
-        //[ProducesResponseType(StatusCodes.Status204NoContent)]
-        //[ProducesResponseType(StatusCodes.Status404NotFound)]
-        //[ProducesResponseType(StatusCodes.Status400BadRequest)]
-        //public async Task<IActionResult> UpdatePatient(
-        //    Guid patientId,
-        //    [FromBody] UpdatePatientRequest request,
-        //    CancellationToken cancellationToken)
-        //{
-        //    await _patientService.UpdatePatientAsync(
-        //        patientId,
-        //        request,
-        //        cancellationToken);
+        [HttpPut("{patientId:guid}")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public async Task<IActionResult> UpdatePatient(
+            Guid patientId,
+            [FromBody] UpdatePatientRequest request,
+            CancellationToken cancellationToken)
+        {
+            await _patientService.UpdatePatientAsync(patientId,request,cancellationToken);
 
-        //    return NoContent();
-        //}
+            return NoContent();
+        }
 
         // =========================================================
         // 4. Upload Medical Document
@@ -103,10 +92,10 @@ namespace HIS.API.Controllers
             [FromForm] UploadMedicalDocumentRequest request,
             CancellationToken cancellationToken)
         {
-            await _patientService.UploadMedicalDocumentAsync(
-                patientId,
-                request,
-                cancellationToken);
+            //await _patientService.UploadMedicalDocumentAsync(
+            //    patientId,
+            //    request,
+            //    cancellationToken);
 
             return NoContent();
         }
@@ -147,10 +136,10 @@ namespace HIS.API.Controllers
             [FromBody] AddMedicalHistoryRequest request,
             CancellationToken cancellationToken)
         {
-            await _patientService.AddMedicalHistoryEntryAsync(
-                patientId,
-                request,
-                cancellationToken);
+            //await _patientService.AddMedicalHistoryEntryAsync(
+            //    patientId,
+            //    request,
+            //    cancellationToken);
 
             return NoContent();
         }
@@ -169,9 +158,7 @@ namespace HIS.API.Controllers
             CancellationToken cancellationToken)
         {
             var result =
-                await _patientService.SearchPatientsAsync(
-                    request,
-                    cancellationToken);
+                await _patientService.SearchAsync(request, cancellationToken);
 
             return Ok(result);
         }

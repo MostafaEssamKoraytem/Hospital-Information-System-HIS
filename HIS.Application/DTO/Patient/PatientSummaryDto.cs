@@ -6,7 +6,18 @@ using System.Threading.Tasks;
 
 namespace HIS.Application.DTO.Patient
 {
-    public class PatientSummaryDto
+    public sealed class PatientSummaryDto
     {
+        public Guid Id { get; init; }
+
+        public string MRN { get; init; } = default!;
+
+        public string FullName { get; init; } = default!;
+
+        public string PhoneNumber { get; init; } = default!;
+
+        public string Gender { get; init; } = default!;
+
+        public string Status { get; init; } = default!;
     }
 }

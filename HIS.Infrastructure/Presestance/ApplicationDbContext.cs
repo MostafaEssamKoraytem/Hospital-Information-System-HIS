@@ -75,6 +75,6 @@ namespace HIS.Infrastructure.Presestance
 
         public DbSet<AuditLog> AuditLogs => Set<AuditLog>();
 
-        public DbSet<EmergencyContact> EmergencyContacts => Set<EmergencyContact>();
+      //  public DbSet<EmergencyContact> EmergencyContacts => Set<EmergencyContact>();
     }
 }

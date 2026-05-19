@@ -23,7 +23,6 @@ namespace HIS.Infrastructure.Presestance.Repository
         {
             foreach (var domainEvent in domainEvents)
             {
-               
                 await _publisher.Publish(domainEvent as INotification);
             }
         }

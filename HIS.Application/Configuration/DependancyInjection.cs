@@ -1,4 +1,5 @@
-﻿using HIS.Application.Interface;
+﻿using HIS.Application.Automapper;
+using HIS.Application.Interface;
 using HIS.Application.Service;
 using HIS.Domain.Interfaces.Repository;
 using Microsoft.Extensions.DependencyInjection;
@@ -14,6 +15,12 @@ namespace HIS.Application.Configuration
     {
         public static IServiceCollection AddApplication(this IServiceCollection services)
         {
+            // Automapper configuration
+            services.AddAutoMapper(cfg =>
+            {
+                cfg.AddProfile<PatientProfile>();
+                // Add other profiles here
+            });
             services.AddScoped<IPatientService, PatientService>();
             return services;
         }

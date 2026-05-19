@@ -6,7 +6,8 @@ using System.Threading.Tasks;
 
 namespace HIS.Application.DTO.Patient
 {
-    public class DeactivatePatientRequest
+    public sealed class DeactivatePatientRequest
     {
+        public string Reason { get; init; } = default!;
     }
 }

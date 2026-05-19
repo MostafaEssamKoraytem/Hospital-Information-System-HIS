@@ -2,6 +2,7 @@
 using HIS.Domain.Common;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -15,7 +16,7 @@ namespace HIS.Domain.Aggregates.PatientAggregate.Entities.SubEntities
         public string FullName { get; private set; }
 
         public string Relationship { get; private set; }
-
+      
         public PhoneNumber PhoneNumber { get; private set; }
 
         private EmergencyContact()

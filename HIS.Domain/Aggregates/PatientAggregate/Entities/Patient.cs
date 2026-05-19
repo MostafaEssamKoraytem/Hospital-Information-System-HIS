@@ -21,13 +21,14 @@ namespace HIS.Domain.Aggregates.PatientAggregate.Entities
         public MRN MRN { get; private set; }
         public PersonName FullName { get; private set; }
         public NationalIdentity NationalIdentity { get; private set; }
+  
         public PhoneNumber PhoneNumber { get; private set; }
         public Address Address { get; private set; }
 
         public DateOnly DateOfBirth { get; private set; }
         public int Gender { get; private set; }
 
-        //[NotMapped]
+       
         public PatientStatus Status { get; private set; }
         public bool IsActive => Status == PatientStatus.Active; // true // false
         public InsurancePolicy? InsurancePolicy { get; private set; }
@@ -42,10 +43,14 @@ namespace HIS.Domain.Aggregates.PatientAggregate.Entities
         
         private Patient() { }
 
-        public static Patient Create(PersonName fullName,NationalIdentity nationalIdentity,
-            PhoneNumber phoneNumber,
-                    Address address,
-                    DateOnly dateOfBirth,int gender, InsurancePolicy? insurancePolicy = null)
+        public static Patient Create(
+                PersonName fullName,
+                NationalIdentity nationalIdentity,
+                PhoneNumber phoneNumber,
+                //Address address,
+                DateOnly dateOfBirth,
+                int gender, 
+                InsurancePolicy? insurancePolicy = null)
         {
             ValidateAge(dateOfBirth);
 
@@ -56,7 +61,7 @@ namespace HIS.Domain.Aggregates.PatientAggregate.Entities
                 FullName = fullName,
                 NationalIdentity = nationalIdentity,
                 PhoneNumber = phoneNumber,
-                Address = address,
+                //Address = address,
                 DateOfBirth = dateOfBirth,
                 Gender = gender,
                 InsurancePolicy = insurancePolicy,
@@ -69,7 +74,9 @@ namespace HIS.Domain.Aggregates.PatientAggregate.Entities
             return patient;
         }
 
-        public void UpdatePersonalInfo(PersonName fullName,PhoneNumber phoneNumber,Address address,int gender)
+        public void UpdatePersonalInfo(PersonName fullName,
+            PhoneNumber phoneNumber,
+            Address address,int gender)
         {
             FullName = fullName;
             PhoneNumber = phoneNumber;
@@ -147,6 +154,6 @@ namespace HIS.Domain.Aggregates.PatientAggregate.Entities
             PhoneNumber = phone;
         }
 
-      
+
     }
 }
