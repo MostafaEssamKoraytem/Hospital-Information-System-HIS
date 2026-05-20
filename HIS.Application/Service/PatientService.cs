@@ -36,7 +36,7 @@ namespace HIS.Application.Service
 
         public async Task<Guid> CreateAsync(CreatePatientRequest request)
         {
-            if (await _patientRepository.ExistsDuplicateActivePatientAsync(request.NationalIdentity, request.PhoneNumber)) { }
+            if (await _patientRepository.ExistsDuplicateActivePatientAsync(request.NationalIdentity, request.PhoneNumber))
             throw new InvalidOperationException("Duplicate active patient exists.");
 
             var patient = _mapper.Map<Patient>(request);
